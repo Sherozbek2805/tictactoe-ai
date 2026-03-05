@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tic Tac Toe AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen">
+
+<h1 class="text-4xl font-bold mb-6">Tic Tac Toe AI</h1>
+
+<div id="playerSelect" class="mb-6">
+<button onclick="choosePlayer('X')" class="px-4 py-2 bg-blue-600 rounded mr-2">Play as X</button>
+<button onclick="choosePlayer('O')" class="px-4 py-2 bg-green-600 rounded">Play as O</button>
+</div>
+
+<p id="status" class="mb-4 text-lg">Choose your player</p>
+
+<div id="board" class="grid grid-cols-3 gap-2">
+
+<div class="cell w-24 h-24 bg-gray-800 flex items-center justify-center text-4xl cursor-pointer rounded" data-row="0" data-col="0"></div>
+<div class="cell w-24 h-24 bg-gray-800 flex items-center justify-center text-4xl cursor-pointer rounded" data-row="0" data-col="1"></div>
+<div class="cell w-24 h-24 bg-gray-800 flex items-center justify-center text-4xl cursor-pointer rounded" data-row="0" data-col="2"></div>
+
+<div class="cell w-24 h-24 bg-gray-800 flex items-center justify-center text-4xl cursor-pointer rounded" data-row="1" data-col="0"></div>
+<div class="cell w-24 h-24 bg-gray-800 flex items-center justify-center text-4xl cursor-pointer rounded" data-row="1" data-col="1"></div>
+<div class="cell w-24 h-24 bg-gray-800 flex items-center justify-center text-4xl cursor-pointer rounded" data-row="1" data-col="2"></div>
+
+<div class="cell w-24 h-24 bg-gray-800 flex items-center justify-center text-4xl cursor-pointer rounded" data-row="2" data-col="0"></div>
+<div class="cell w-24 h-24 bg-gray-800 flex items-center justify-center text-4xl cursor-pointer rounded" data-row="2" data-col="1"></div>
+<div class="cell w-24 h-24 bg-gray-800 flex items-center justify-center text-4xl cursor-pointer rounded" data-row="2" data-col="2"></div>
+
+</div>
+
+<button onclick="resetGame()" class="mt-6 px-6 py-3 bg-red-600 rounded">
+Restart
+</button>
+
+<script src="/static/script.js"></script>
+
+</body>
+</html>
