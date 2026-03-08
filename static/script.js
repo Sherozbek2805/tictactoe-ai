@@ -1,155 +1,178 @@
 let board = [
-[null,null,null],
-[null,null,null],
-[null,null,null]
+    [null, null, null],
+    [null, null, null],
+    [null, null, null]
 ]
 
 let user = null
 let ai = null
 let gameOver = false
+let isPlayerTurn = false
 
 const cells = document.querySelectorAll(".cell")
 const statusText = document.getElementById("status")
 
-cells.forEach(cell=>{
-cell.addEventListener("click", playerMove)
+cells.forEach(cell => {
+    cell.addEventListener("click", playerMove)
 })
 
-function choosePlayer(choice){
+function choosePlayer(choice) {
 
-user = choice
-ai = choice === "X" ? "O" : "X"
+    user = choice
+    ai = choice === "X" ? "O" : "X"
 
-document.getElementById("playerSelect").style.display = "none"
+    document.getElementById("playerSelect").style.display = "none"
 
-statusText.innerText = "Game started!"
-
-if(ai === "X"){
-aiMove()
+    if (user === "X") {
+        statusText.innerText = "Your turn"
+        isPlayerTurn = true
+    } 
+    else {
+        statusText.innerText = "AI thinking..."
+        isPlayerTurn = false
+        aiMove()
+    }
 }
 
+function playerMove(e) {
+
+    if (gameOver || !isPlayerTurn) return
+
+    let row = e.target.dataset.row
+    let col = e.target.dataset.col
+
+    if (board[row][col] !== null) return
+
+    board[row][col] = user
+    e.target.innerText = user
+
+    isPlayerTurn = false
+
+    checkGame()
+
+    if (!gameOver) {
+        aiMove()
+    }
 }
 
-function playerMove(e){
+async function aiMove() {
 
-if(gameOver || !user) return
+    statusText.innerText = "AI thinking..."
 
-let row = e.target.dataset.row
-let col = e.target.dataset.col
+    // small delay for realism
+    await new Promise(r => setTimeout(r, 500))
 
-if(board[row][col] !== null) return
+    let response = await fetch("/ai_move", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ board: board })
+    })
 
-board[row][col] = user
-e.target.innerText = user
+    let data = await response.json()
 
-checkGame()
+    let move = data.move
 
-if(!gameOver){
-aiMove()
+    if (move && !gameOver) {
+
+        let r = move[0]
+        let c = move[1]
+
+        board[r][c] = ai
+
+        document.querySelector(
+            `.cell[data-row="${r}"][data-col="${c}"]`
+        ).innerText = ai
+
+        checkGame()
+
+        if (!gameOver) {
+            isPlayerTurn = true
+            statusText.innerText = "Your turn"
+        }
+    }
 }
 
+function checkGame() {
+
+    let winner = getWinner()
+
+    if (winner) {
+        statusText.innerText = winner + " wins!"
+        gameOver = true
+        return
+    }
+
+    let full = true
+
+    for (let row of board) {
+        for (let cell of row) {
+            if (cell === null) {
+                full = false
+            }
+        }
+    }
+
+    if (full) {
+        statusText.innerText = "Draw!"
+        gameOver = true
+    }
 }
 
-async function aiMove(){
+function getWinner() {
 
-statusText.innerText = "AI thinking..."
+    const combos = [
 
-let response = await fetch("/ai_move",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({board:board})
-})
+        [[0,0],[0,1],[0,2]],
+        [[1,0],[1,1],[1,2]],
+        [[2,0],[2,1],[2,2]],
 
-let data = await response.json()
+        [[0,0],[1,0],[2,0]],
+        [[0,1],[1,1],[2,1]],
+        [[0,2],[1,2],[2,2]],
 
-let move = data.move
+        [[0,0],[1,1],[2,2]],
+        [[0,2],[1,1],[2,0]]
 
-if(move && !gameOver){
+    ]
 
-let r = move[0]
-let c = move[1]
+    for (let combo of combos) {
 
-board[r][c] = ai
+        let a = combo[0]
+        let b = combo[1]
+        let c = combo[2]
 
-document.querySelector(
-`.cell[data-row="${r}"][data-col="${c}"]`
-).innerText = ai
+        if (
+            board[a[0]][a[1]] &&
+            board[a[0]][a[1]] === board[b[0]][b[1]] &&
+            board[a[0]][a[1]] === board[c[0]][c[1]]
+        ) {
+            return board[a[0]][a[1]]
+        }
+    }
 
-checkGame()
-
+    return null
 }
 
-}
+function resetGame() {
 
-function checkGame(){
+    board = [
+        [null,null,null],
+        [null,null,null],
+        [null,null,null]
+    ]
 
-let winner = getWinner()
+    cells.forEach(cell => {
+        cell.innerText = ""
+    })
 
-if(winner){
+    user = null
+    ai = null
+    gameOver = false
+    isPlayerTurn = false
 
-statusText.innerText = winner + " wins!"
-gameOver = true
-return
-}
+    document.getElementById("playerSelect").style.display = "block"
 
-if(board.flat().every(c=>c!==null)){
-statusText.innerText = "Draw!"
-gameOver = true
-return
-}
-
-statusText.innerText = "Your turn"
-
-}
-
-function getWinner(){
-
-const wins = [
-[[0,0],[0,1],[0,2]],
-[[1,0],[1,1],[1,2]],
-[[2,0],[2,1],[2,2]],
-[[0,0],[1,0],[2,0]],
-[[0,1],[1,1],[2,1]],
-[[0,2],[1,2],[2,2]],
-[[0,0],[1,1],[2,2]],
-[[0,2],[1,1],[2,0]]
-]
-
-for(let combo of wins){
-
-let a = combo[0]
-let b = combo[1]
-let c = combo[2]
-
-if(
-board[a[0]][a[1]] &&
-board[a[0]][a[1]] === board[b[0]][b[1]] &&
-board[a[0]][a[1]] === board[c[0]][c[1]]
-){
-return board[a[0]][a[1]]
-}
-
-}
-
-return null
-}
-
-function resetGame(){
-
-board = [
-[null,null,null],
-[null,null,null],
-[null,null,null]
-]
-
-cells.forEach(c=>c.innerText="")
-
-gameOver = false
-user = null
-ai = null
-
-document.getElementById("playerSelect").style.display = "block"
-
-statusText.innerText = "Choose your player"
-
+    statusText.innerText = "Choose your player"
 }
